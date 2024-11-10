@@ -1,0 +1,10 @@
+/c 컴파일만 링킹X
+
+cl.exe math.ixx /c /std:c++latest
+
+윈도우 dir math.*
+cl.exe using_module.cpp match.obj /std:c++latest
+
+static/동적 라이브러리
+PE/ELF 포맷 관계
+

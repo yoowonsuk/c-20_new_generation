@@ -1,0 +1,51 @@
+https://github.com/codenuri/CPP20/blob/main/ALGORITHM/iter_value_t.cpp
+
+typename T::value_type n: // 포인터는 못 넣음. ex) 배열 포인터
+typename std:iterator_traits<T>::value_type n1; => 포인터도 묶임
+=> 어려워.. std::iter_value_t<T> n2;
+
+iterator 반복자
+container
+
+typename C::value_type n; // C가 배열이면 error
+
+
+
+
+range_value_t.cpp
+
+// 실패
+// C++ 17. class template type deduction guide
+template<typename C> List(C&&)->List <typename <C>::value_tyle>;
+std::vector v = {1,2,3};
+List s3(v);
+
+// 가능
+using V = std::vector<int>
+V::value_type n; 
+
+// 컴파일 에러
+using V = std::vector<int>&
+V::value_type n; 
+
+// 성공
+// 근데 배열일 땐 또 문제
+template<typename C> List(C&&)->List <typename std::remove_reference_t<C>::value_tyle>;
+std::vector v = {1,2,3};
+List s3(v);
+
+따라서
+template<typename C> List(C&&)->List< std::ranges::range_value_t<C> >;
+
+원하면 List s4(v.begin(), v.end()); 반복자 추론도 만들어봐..
+
+
+
+std::erase
+vector를 넘겨주면 size만 변경
+list일 땐 메모리도 변경( capacity)
+
+
+std::begin과 std::ranges::begin의 결정적인 차이 2 가지
+borrowed_range
+dangling iterator 가 차이가 크다
