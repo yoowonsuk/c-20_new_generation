@@ -1,3 +1,6 @@
+int x = 3
+foo(static_cast<int&&>(x)); xvalue라고 함
+
 std::decay_t 는 참조 뿐 아니라 const, volatile 도 제거
 
 C++ 23 auto(expression) auto{expression}
