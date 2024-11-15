@@ -1,0 +1,102 @@
+// 소스는 여기에 제출해 주세요
+
+// 1번 
+#include <iostream>
+int main(void) {
+	int x = 1, y = 2;
+	[]<typename T>(T& a, T& b) {a ^= b, b ^= a, a ^= b;} (x, y);
+	std::cout << x << std::endl;
+	std::cout << y << std::endl;
+}
+
+// 2번
+#include <iostream>
+#include <coroutine>
+
+class Generator
+{
+public:
+    struct Promise
+    {       
+    public:
+			Generator get_return_object(){
+				return Generator{ std::coroutine_handle<Promise>::from_promise(*this) };
+			}
+			auto initial_suspend() { return std::suspend_always{}; }
+			auto return_void()     { return std::suspend_never{}; }
+			auto final_suspend() noexcept  { return std::suspend_always{}; }
+			void unhandled_exception() { std::exit(1); }
+    };
+    using promise_type = Promise;
+    std::coroutine_handle<promise_type> coro;
+    Generator( std::coroutine_handle<promise_type> c ) : coro(c) {}
+    ~Generator() { if ( coro ) coro.destroy();}
+};
+Generator foo()
+{
+	int value = 1;
+	while(1) {
+		std::cout << value << std::endl;
+		value += 2;
+		co_await std::suspend_always {};
+	}
+}
+int main()
+{
+    Generator g = foo();
+
+		while(1) {
+			g.coro.resume();
+		}
+}
+
+// 3번
+#include <iostream>
+#include <vector>
+#include <ranges>
+
+int main(void) {
+    std::vector<int> v = {1, 2, 3, 4, 5, 6, 7, 8 ,9, 10};
+
+    auto view = v | std::views::drop(3) | std::views::filter([](int n) {return n % 2 == 0;}) | std::views::transform([](int a){return a*2;});
+    for (auto n : view)
+        std::cout << n << ", ";
+}
+
+// 4번
+#include <iostream>
+#include <iterator>
+#include <type_traits>
+
+template<typename Derived> class Base
+{
+public:
+	// Derived의 category 속성이 std::random_access_iterator_tag 일 경우에만
+	// foo 함수가 제공되도록 코드를 변경해 보세요.
+  //template<typename T> requires std::is_same_v<typename Derived::category, std::random_access_iterator_tag>
+  //void foo() {}
+    void foo() requires std::is_same_v<typename Derived::category, std::random_access_iterator_tag>
+    {}
+	void goo() {}
+};
+class A: public Base<A>
+{
+public:
+	using category = std::random_access_iterator_tag;
+};
+
+class B: public Base<B>
+{
+public:
+	using category = std::bidirectional_iterator_tag;
+};
+
+int main(void) {
+	// 과제의 핵심은 아래 처럼 B는 foo함수가 제공되지 않아야 합니다.
+	A a;
+	B b;
+	a.foo(); // ok
+	a.goo(); // ok
+	b.foo(); // error
+	b.goo(); // ok
+}
